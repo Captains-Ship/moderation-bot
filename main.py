@@ -18,7 +18,7 @@ logger.setLevel(config.loglevel)
 for h in handlers:
     h.setFormatter(formatter)
     logger.addHandler(h)
-logger.debug("Starting...")
+logger.info("Initializing...")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -28,12 +28,22 @@ bot = Bot(
     status=discord.Status.dnd,
     activity=discord.Game("You got games on your phone?"),
     help_command=PaginatedEmbedHelpCommand(),
-    description="An indev moderation bot"
+    description="An indev moderation bot",
+    allowed_mentions=discord.AllowedMentions.none(),
+    owner_pass=config.owner_pass
 )
 
 
 async def main():
+    if config.loglevel == logging.DEBUG - 1:
+        discord.utils.setup_logging(
+            handler=discord.utils.MISSING,
+            formatter=formatter,
+            level=logging.DEBUG,
+            root=False,
+        )
     async with bot:
+        logger.info("Starting...")
         await bot.start(config.token)
 
 
