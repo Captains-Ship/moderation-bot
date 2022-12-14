@@ -46,6 +46,9 @@ class Bot(commands.Bot):
             except Exception as e:
                 logger.error(f"Failed to load cogs/{cog}:\n{e}")
 
+    async def on_error(self, event_method: str, /, *args, **kwargs) -> None:
+            logger.error(f"error in {event_method}")
+
     async def on_command_error(self, context, exception) -> None:
         if isinstance(exception, discord.ext.commands.NotOwner):
             ...  # TODO: self.bot.owner_pass
