@@ -34,7 +34,8 @@ class Bot(commands.Bot):
         super().__init__(*args, **kwargs)
         if self.owner_pass.endswith("???PRINTPASS"):
             self.owner_pass = self.owner_pass.replace("???PRINTPASS", "")
-            logger.info(f"Random password: {self.owner_pass}")
+            logger.info(f"password: {self.owner_pass}")
+        self.action_logs = []
 
     async def setup_hook(self) -> None:
         for cog in os.listdir("./cogs"):
@@ -47,7 +48,7 @@ class Bot(commands.Bot):
                 logger.error(f"Failed to load cogs/{cog}:\n{e}")
 
     async def on_error(self, event_method: str, /, *args, **kwargs) -> None:
-            logger.error(f"error in {event_method}")
+            logger.error(f"Ignoring error in {event_method}")
 
     async def on_command_error(self, context, exception) -> None:
         if isinstance(exception, discord.ext.commands.NotOwner):
@@ -75,16 +76,35 @@ class PaginatedEmbedHelpCommand(commands.MinimalHelpCommand):
 
 
 class GuildConfig:
-    possible = [Choice(name="Dynamic Slowmode Channels", value="dynamic_slowmode_channels"), Choice(name="Automod level", value="automod_level"), Choice(name="Prefix", value="prefix")]
+    possible = [
+        Choice(name="Dynamic Slowmode Channels", 
+        value="dynamic_slowmode_channels"), 
+        Choice(name="Automod level", value="automod_level"), 
+        Choice(name="Prefix", value="prefix"),
+        Choice(name="Quarantine Role", value="qrole"),
+        Choice(name="Modlog Channel", value="mchannel")
+    ]
     def __init__(self, **kwargs):
-        self.values = {
+        self.defaults = {
             "dynamic_slowmode_channels": set(),
             "automod_level": 0,
             "prefix": config.prefix,
-            **kwargs
+            "qrole": 0,
+            "mchannel": 1035159586765803591 # 0
         }
+        self.values = { **self.defaults, **kwargs }
+
     def __getattr__(self, item):
+        # print(item)  # <-- this fixed it?!?!
         if self.values.get(item) is not None:
             return self.values.get(item)
         logger.getChild("GuildConfig").warning(f"Unknown setting {item!r} requested.")
         return f"{item!r} is not a config value."
+
+    def __getitem__(self, item):
+        return getattr(self, item)
+
+    @classmethod
+    async def from_guild(cls, guild_id: int):
+        return cls()  # TODO: implement a database
+    

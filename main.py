@@ -24,6 +24,7 @@ logger.info("Initializing...")
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 bot = Bot(
     command_prefix=config.prefix,
     intents=intents,
@@ -34,24 +35,6 @@ bot = Bot(
     allowed_mentions=discord.AllowedMentions.none(),
     owner_pass=config.owner_pass
 )
-
-
-# Extension 'cogs.contextmenu' raised an error: TypeError: context menus cannot be defined inside a class
-@app_commands.context_menu(name="report")
-@app_commands.guilds(discord.Object(id=1030371410637488159))
-async def reportmenu(interaction: discord.Interaction, message: discord.Message):
-    channel: discord.TextChannel = bot.get_channel(1050882293146865705)
-    embed = discord.Embed(
-        title=f"Report on {message.author!r} by {interaction.user!r}",
-        description=f"Content:```\n{discord.utils.escape_markdown(message.content)}```"
-    )
-    embed.add_field(name="Message link", value=message.jump_url, inline=False)
-    embed.add_field(name="User info", value=f"```\nID = {message.author.id}\nJoined: {message.author.joined_at}\nCreated: {message.author.created_at}```", inline=True)
-    embed.add_field(name="Reporter info", value=f"```\nID = {interaction.user.id}\nJoined: {interaction.user.joined_at}\nCreated: {interaction.user.created_at}```", inline=True)
-    t = await channel.create_thread(name=str(interaction.user.id),
-                                    type=discord.ChannelType.private_thread)
-    await t.send(interaction.user.mention, embed=embed)
-
 
 async def main():
     if config.loglevel == logging.DEBUG - 1:

@@ -1,3 +1,4 @@
 /latest.log
 /venv
 /config.py
+**/__pycache__

@@ -1,0 +1,1 @@
+clear;python main.py
